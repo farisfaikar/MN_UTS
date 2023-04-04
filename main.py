@@ -4,7 +4,6 @@ NIM: 4611421092
 Matkul: Metode Numerik
 Perihal: UTS
 """
-import math
 import sympy
 
 
@@ -41,7 +40,7 @@ def regula_falsi(f, a, b, tol, max_iter=50):
         print("Tidak ada akar dalam interval yang diberikan.")
         return None
     else:
-        print(f"{'n':^5} {'a':^10} {'b':^10} {'c':^10} {'f(a)':^10} {'f(b)':^10} {'f(c)':^10} {'error':^10}")
+        print(f"{'n':^5} {'a':^10} {'b':^10} {'c':^10} {'f(a)':^10} {'f(b)':^10} {'f(c)':^10} {'|f(b)-f(a)|/|f(a)+f(b)|':^10}")
         n = 1
         error = abs(f(b) - f(a)) / (abs(f(a)) + abs(f(b)))
         while error > tol and n < max_iter:
@@ -86,13 +85,15 @@ def newton_rhapson(f, df, x0, tol, max_iter=50):
     xn = x0 - f(x0) / df(x0)
     n = 1
     while abs(xn - x0) > tol and n < max_iter:
-        print(f"{n:^5} {f(xn):^10.6f} {df(xn):^10.6f} {xn-x0:^10.6f} {(xn-x0)/xn:^10.6f}")  # TODO: Pake abs()?
+        # TODO: Pake abs()?
+        print(
+            f"{n:^5} {f(xn):^10.6f} {df(xn):^10.6f} {xn-x0:^10.6f} {(xn-x0)/xn:^10.6f}")
         x0 = xn
         xn = x0 - f(x0) / df(x0)
         n += 1
 
     print(f"{n:^5} {f(xn):^10.6f} {df(xn):^10.6f} {xn-x0:^10.6f} {(xn-x0)/xn:^10.6f}")
-    
+
     if n == max_iter:
         print("Iterasi tidak konvergen.")
         return None
@@ -125,10 +126,11 @@ def input_symb(metode="default"):
 
     if metode == "newton":
         # Replace the multiplication of `exp()` with the `sympy.exp()` function call.
-        func = func.replace(sympy.exp(x_symbol)*sympy.Symbol('*')*sympy.exp(x_symbol), sympy.exp(x_symbol)**2)
-        
+        func = func.replace(sympy.exp(x_symbol)*sympy.Symbol('*')
+                            * sympy.exp(x_symbol), sympy.exp(x_symbol)**2)
+
     func = sympy.lambdify(x_symbol, func, "numpy")
-    
+
     def f(x):
         return func(x)
 
@@ -148,17 +150,19 @@ def f_to_g(f, x):
     g = sympy.solve(sympy.Eq(f(x), 0), x)[0]
     return g
 
+
 def input_param(type="bisection"):
+    """ Input fungsi secara manual
     def f(x):
         # return x**6-x-1  # Secant: 2, 1, 0.00001
         # return x**3+x-3  # Newton-Rhapson: 1.1, 0.00001
         # return 3/(x-2)  # Iterasi: 4, 0.00001
         # return 5*x**5-3*x**2+x+24  # Regula-Falsi: -1.5, 1, 0.00001
-        # return math.exp(-x)-x  # Bisection: -1, 1, 0.00001
-        return x**4  # Bisection: 0, 10, 0.00001
+        return math.exp(-x)-x  # Bisection: -1, 1, 0.00001
 
     def df(x):
         return 3*x**2+1
+    """
 
     if type == "bisection" or type == "regula-falsi":
         f = input_symb()
