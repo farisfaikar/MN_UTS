@@ -5,9 +5,10 @@ Matkul: Metode Numerik
 Perihal: UTS
 """
 import math
+import sympy
 
 
-def bisection(f, a, b, tol, max_iter=50):  # TODO: metodenya belum benar
+def bisection(f, a, b, tol, max_iter=50):
     if f(a) * f(b) > 0:
         print("Tidak ada akar dalam interval yang diberikan.")
         return None
@@ -59,21 +60,21 @@ def regula_falsi(f, a, b, tol, max_iter=50):
         return (a * f(b) - b * f(a)) / (f(b) - f(a))
 
 
-def iterasi_titik_tetap(f, x0, tol):
+def iterasi_titik_tetap(g, x0, tol, max_iter=50):
     print(f"{'n':^5} {'xn':^10} {'xn-1xn':^10}")
     n = 1
-    print(f"{n:^5} {x0:^10} {'-':^10}")
+    print(f"{n:^5} {x0:^10.6f} {'-':^10}")
     n += 1
-    xn = f(x0)
-    while abs(xn - x0) > tol and n < 100:
+    xn = g(x0)
+    while abs(xn - x0) > tol and n < max_iter:
         print(f"{n:^5} {xn:^10.6f} {abs(xn - x0):^10.6f}")
         x0 = xn
-        xn = f(x0)
+        xn = g(x0)
         n += 1
 
     print(f"{n:^5} {xn:^10.6f} {abs(xn - x0):^10.6f}")
 
-    if n == 100:
+    if n == max_iter:
         print("Iterasi tidak konvergen.")
         return None
     else:
@@ -117,39 +118,81 @@ def secant(f, x0, x1, tol, max_iter=50):
         return xn
 
 
+def input_symb(metode="default"):
+    x_symbol = sympy.Symbol('x')
+    expr = input("Tulis fungsi f(x): ")
+    func = sympy.sympify(expr)
+
+    if metode == "newton":
+        # Replace the multiplication of `exp()` with the `sympy.exp()` function call.
+        func = func.replace(sympy.exp(x_symbol)*sympy.Symbol('*')*sympy.exp(x_symbol), sympy.exp(x_symbol)**2)
+        
+    func = sympy.lambdify(x_symbol, func, "numpy")
+    
+    def f(x):
+        return func(x)
+
+    if metode == "newton":
+        diff_func = sympy.diff(expr, x_symbol)
+        diff_func_str = sympy.srepr(diff_func).replace('**', '^')
+        diff_func_result = sympy.parse_expr(diff_func_str)
+        df = sympy.lambdify(x_symbol, diff_func_result, "numpy")
+        print(f"Turunan fungsi: df(x) = {diff_func_result}")
+        return f, df
+    else:
+        return f
+
+
+def f_to_g(f, x):
+    # Lakukan transformasi persamaan f(x) menjadi g(x)
+    g = sympy.solve(sympy.Eq(f(x), 0), x)[0]
+    return g
+
 def input_param(type="bisection"):
     def f(x):
-        return x**6-x-1  # Secant: 2, 1, 0.00001
+        # return x**6-x-1  # Secant: 2, 1, 0.00001
         # return x**3+x-3  # Newton-Rhapson: 1.1, 0.00001
         # return 3/(x-2)  # Iterasi: 4, 0.00001
         # return 5*x**5-3*x**2+x+24  # Regula-Falsi: -1.5, 1, 0.00001
         # return math.exp(-x)-x  # Bisection: -1, 1, 0.00001
+        return x**4  # Bisection: 0, 10, 0.00001
 
     def df(x):
         return 3*x**2+1
 
     if type == "bisection" or type == "regula-falsi":
+        f = input_symb()
         a = float(input("Masukkan batas bawah (a): "))
         b = float(input("Masukkan batas atas (b): "))
         tol = float(input("Masukkan nilai toleransi (tol): "))
         return f, a, b, tol
-    elif type == "iterasi":  # TODO: Ubah prompt yang sesuai dan konsisten
-        x0 = float(input("Masukkan batas atas (x0): "))
+    elif type == "iterasi":
+        g = input_symb("iterasi")
+        x0 = float(input("Tebakan awal (x0): "))
         tol = float(input("Masukkan nilai toleransi (tol): "))
-        return f, x0, tol
+        return g, x0, tol
     elif type == "newton":
-        x0 = float(input("Masukkan batas atas (x0): "))
+        f, df = input_symb("newton")
+        x0 = float(input("Tebakan awal (x0): "))
         tol = float(input("Masukkan nilai toleransi (tol): "))
         return f, df, x0, tol
     elif type == "secant":
+        f = input_symb()
         x0 = float(input("Masukkan batas atas (x0): "))
         x1 = float(input("Masukkan batas bawah (x1): "))
         tol = float(input("Masukkan nilai toleransi (tol): "))
         return f, x0, x1, tol
 
 
+def print_hasil(akar):
+    if akar is not None:
+        print(f"Akar ditemukan pada x = {akar:.6f}")
+    else:
+        print("Akar tidak ditemukan.")
+
+
 def main():
-    while True:  # Sanitize input loop
+    while True:  # Amankan input loop
         print("=" * 50)
         print(f"{' Program UTS Metode Numerik ':-^50}")
         print("=" * 50)
@@ -165,27 +208,27 @@ def main():
                 print(f"{' Metode Bisection ':=^50}")
                 f, a, b, tol = input_param()
                 akar = bisection(f, a, b, tol)
-                print(f"Akar ditemukan pada x = {akar:.6f}")
+                print_hasil(akar)
             elif answer == 2:
                 print(f"{' Metode Regula-Falsi ':=^50}")
                 f, a, b, tol = input_param()
                 akar = regula_falsi(f, a, b, tol)
-                print(f"Akar ditemukan pada x = {akar:.6f}")
+                print_hasil(akar)
             elif answer == 3:
                 print(f"{' Metode Iterasi Titik Tetap ':=^50}")
                 f, x0, tol = input_param("iterasi")
                 akar = iterasi_titik_tetap(f, x0, tol)
-                print(f"Akar ditemukan pada x = {akar:.6f}")
+                print_hasil(akar)
             elif answer == 4:
                 print(f"{' Metode Newton Rhapson ':=^50}")
                 f, df, x0, tol = input_param("newton")
                 akar = newton_rhapson(f, df, x0, tol)
-                print(f"Akar ditemukan pada x = {akar:.6f}")
+                print_hasil(akar)
             elif answer == 5:
                 print(f"{' Metode Secant ':=^50}")
                 f, x0, x1, tol = input_param("secant")
                 akar = secant(f, x0, x1, tol)
-                print(f"Akar ditemukan pada x = {akar:.6f}")
+                print_hasil(akar)
             else:
                 print(f"{' Pilih antara 1-5 ':!^50}")
                 continue
