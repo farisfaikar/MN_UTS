@@ -5,6 +5,7 @@ Matkul: Metode Numerik
 Perihal: UTS
 """
 import sympy
+import math
 
 
 def bisection(f, a, b, tol, max_iter=50):
@@ -85,7 +86,6 @@ def newton_rhapson(f, df, x0, tol, max_iter=50):
     xn = x0 - f(x0) / df(x0)
     n = 1
     while abs(xn - x0) > tol and n < max_iter:
-        # TODO: Pake abs()?
         print(
             f"{n:^5} {f(xn):^10.6f} {df(xn):^10.6f} {xn-x0:^10.6f} {(xn-x0)/xn:^10.6f}")
         x0 = xn
@@ -141,14 +141,24 @@ def input_symb(metode="default"):
         df = sympy.lambdify(x_symbol, diff_func_result, "numpy")
         print(f"Turunan fungsi: df(x) = {diff_func_result}")
         return f, df
+    elif metode == "iterasi":
+        g = f_to_g(expr)
+        return g
     else:
         return f
 
 
-def f_to_g(f, x):
-    # Lakukan transformasi persamaan f(x) menjadi g(x)
-    g = sympy.solve(sympy.Eq(f(x), 0), x)[0]
-    return g
+def f_to_g(expr):
+    x = sympy.Symbol('x')
+    f = sympy.sympify(expr)
+    # hitung turunan f(x)
+    df = sympy.diff(f, x)
+    # tentukan konstanta c
+    c = -1 / max(abs(sympy.lambdify(x, df)(xi)) for xi in range(-10, 10) if xi != 0)
+    # hitung g(x)
+    g_expr = x + c * f
+    g_func = sympy.lambdify(x, g_expr, "numpy")
+    return g_func
 
 
 def input_param(type="bisection"):
