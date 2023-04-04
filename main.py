@@ -141,24 +141,8 @@ def input_symb(metode="default"):
         df = sympy.lambdify(x_symbol, diff_func_result, "numpy")
         print(f"Turunan fungsi: df(x) = {diff_func_result}")
         return f, df
-    elif metode == "iterasi":
-        g = f_to_g(expr)
-        return g
     else:
         return f
-
-
-def f_to_g(expr):
-    x = sympy.Symbol('x')
-    f = sympy.sympify(expr)
-    # hitung turunan f(x)
-    df = sympy.diff(f, x)
-    # tentukan konstanta c
-    c = -1 / max(abs(sympy.lambdify(x, df)(xi)) for xi in range(-10, 10) if xi != 0)
-    # hitung g(x)
-    g_expr = x + c * f
-    g_func = sympy.lambdify(x, g_expr, "numpy")
-    return g_func
 
 
 def input_param(type="bisection"):
@@ -181,7 +165,7 @@ def input_param(type="bisection"):
         tol = float(input("Masukkan nilai toleransi (tol): "))
         return f, a, b, tol
     elif type == "iterasi":
-        g = input_symb("iterasi")
+        g = input_symb()
         x0 = float(input("Tebakan awal (x0): "))
         tol = float(input("Masukkan nilai toleransi (tol): "))
         return g, x0, tol
