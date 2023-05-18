@@ -8,7 +8,7 @@ import sympy
 import math
 
 
-def bisection(f, a, b, tol, max_iter=50):
+def bisection(f, a, b, tol, max_iter=100):
     if f(a) * f(b) > 0:
         print("Tidak ada akar dalam interval yang diberikan.")
         return None
@@ -36,7 +36,7 @@ def bisection(f, a, b, tol, max_iter=50):
         return (a + b) / 2
 
 
-def regula_falsi(f, a, b, tol, max_iter=50):
+def regula_falsi(f, a, b, tol, max_iter=100):
     if f(a) * f(b) > 0:
         print("Tidak ada akar dalam interval yang diberikan.")
         return None
@@ -60,7 +60,7 @@ def regula_falsi(f, a, b, tol, max_iter=50):
         return (a * f(b) - b * f(a)) / (f(b) - f(a))
 
 
-def iterasi_titik_tetap(g, x0, tol, max_iter=50):
+def iterasi_titik_tetap(g, x0, tol, max_iter=100):
     print(f"{'n':^5} {'xn':^10} {'xn-1xn':^10}")
     n = 1
     print(f"{n:^5} {x0:^10.6f} {'-':^10}")
@@ -81,13 +81,13 @@ def iterasi_titik_tetap(g, x0, tol, max_iter=50):
         return xn
 
 
-def newton_rhapson(f, df, x0, tol, max_iter=50):
-    print(f"{'n':^5} {'f(xn)':^10} {'f''(xn)':^10} {'xn-xn-1':^10} {'|(xn-xn-1)/xn|':^10}")
+def newton_rhapson(f, df, x0, tol, max_iter=100):
+    print(f"{'n':^5} {'xn':^10} {'f(xn)':^10} {'f''(xn)':^10} {'xn-xn-1':^10} {'|(xn-xn-1)/xn|':^10}")
     xn = x0 - f(x0) / df(x0)
     n = 1
     while abs(xn - x0) > tol and n < max_iter:
         print(
-            f"{n:^5} {f(xn):^10.6f} {df(xn):^10.6f} {xn-x0:^10.6f} {(xn-x0)/xn:^10.6f}")
+            f"{n:^5} {xn:^10.6f} {f(xn):^10.6f} {df(xn):^10.6f} {xn-x0:^10.6f} {(xn-x0)/xn:^10.6f}")
         x0 = xn
         xn = x0 - f(x0) / df(x0)
         n += 1
@@ -101,7 +101,7 @@ def newton_rhapson(f, df, x0, tol, max_iter=50):
         return xn
 
 
-def secant(f, x0, x1, tol, max_iter=50):
+def secant(f, x0, x1, tol, max_iter=100):
     print(f"{'n':^5} {'xn':^10} {'f(xn)':^10} {'xn-xn-1':^10}")
     n = 1
     print(f"{n:^5} {x0:^10.6f} {f(x0):^10.6f} {'-':^10}")
